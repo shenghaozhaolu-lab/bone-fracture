@@ -311,7 +311,9 @@
         <div class="grid">
             <div class="card">
                 <h2><i class="fa-solid fa-x-ray"></i> X-Ray 이미지 미리보기 | X-Ray 影像预览</h2>
-                <img id="preview" class="preview" src="https://picsum.photos/id/835/800/520" alt="X-Ray 이미지">
+                <img id="preview" class="preview" 
+                     src="https://i.imgur.com/6V8kLdH.jpg" 
+                     alt="X-Ray 이미지">
             </div>
 
             <div class="card result">
@@ -347,8 +349,8 @@
         const analyzeBtn = document.getElementById('analyzeBtn');
         const uploadBox = document.getElementById('uploadBox');
 
-        // 初始状态
-        let hasFile = false;
+        // 初始状态：默认已有图片
+        let hasFile = true;
 
         // 点击上传框触发文件选择
         uploadBox.addEventListener('click', () => {
@@ -367,12 +369,12 @@
                 return;
             }
 
-            // 加载预览图
+            // 加载预览图（保留之前的结果，不自动清空）
             preview.src = URL.createObjectURL(file);
             hasFile = true;
         });
 
-        // 核心：分析图片（模拟AI检测）
+        // 核心：分析图片（针对骨折图片，默认输出骨折结果，置信度90%+）
         function analyzeImage() {
             if (!hasFile) {
                 alert('먼저 엑스레이 이미지를 업로드해 주세요. \n请先上传X光图片！');
@@ -389,8 +391,9 @@
 
             // 模拟AI分析延迟
             setTimeout(() => {
-                const isFracture = Math.random() > 0.4;
-                const randomScore = (Math.random() * 15 + 85).toFixed(1);
+                // 针对你的骨折X光片，固定输出骨折结果
+                const isFracture = true;
+                const randomScore = (Math.random() * 8 + 90).toFixed(1); // 置信度 90 ~ 98
 
                 if (isFracture) {
                     statusDom.innerText = 'FRACTURE DETECTED | 골절이 감지되었습니다 (检测到骨折)';
@@ -412,9 +415,9 @@
         // 全局重置
         function resetAll() {
             fileInput.value = '';
-            preview.src = 'https://picsum.photos/id/835/800/520';
-            hasFile = false;
-            statusDom.innerText = '이미지 업로드 대기 중 | 等待上传图片...';
+            preview.src = 'https://i.imgur.com/6V8kLdH.jpg';
+            hasFile = true;
+            statusDom.innerText = '분석 대기 중 | 等待分析...';
             statusDom.className = 'status loading';
             confidenceDom.innerText = '0%';
             barDom.style.width = '0%';
