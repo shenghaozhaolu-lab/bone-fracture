@@ -410,3 +410,4 @@
     </script>
 </body>
 </html>
+<img width="458" height="398" alt="fracture jpg" src="https://github.com/user-attachments/assets/0962b1b9-3792-42bf-ae58-acb19cb389dc" />
