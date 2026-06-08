@@ -264,25 +264,20 @@
             .grid {
                 grid-template-columns: 1fr;
             }
-
             header {
                 font-size: 24px;
                 padding: 18px;
             }
-
             .status {
                 font-size: 28px;
             }
-
             .preview {
                 height: 380px;
             }
-
             .upload-box {
                 min-width: unset;
                 width: 100%;
             }
-
             .btn-group {
                 flex-direction: column;
             }
@@ -311,9 +306,8 @@
         <div class="grid">
             <div class="card">
                 <h2><i class="fa-solid fa-x-ray"></i> X-Ray 이미지 미리보기 | X-Ray 影像预览</h2>
-                <img id="preview" class="preview" 
-                     src="https://i.imgur.com/6V8kLdH.jpg" 
-                     alt="X-Ray 이미지">
+                <!-- 本地图片 fracture.jpg 同目录放置 -->
+                <img id="preview" class="preview" src="fracture.jpg" alt="X-Ray 이미지">
             </div>
 
             <div class="card result">
@@ -340,7 +334,6 @@
     </div>
 
     <script>
-        // 获取DOM元素
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
         const statusDom = document.getElementById('status');
@@ -349,39 +342,33 @@
         const analyzeBtn = document.getElementById('analyzeBtn');
         const uploadBox = document.getElementById('uploadBox');
 
-        // 初始状态：默认已有图片
+        // 初始默认有图片，可直接分析
         let hasFile = true;
 
-        // 点击上传框触发文件选择
         uploadBox.addEventListener('click', () => {
             fileInput.click();
         });
 
-        // 文件选择监听 + 格式校验
+        // 上传新图片：只替换图片，**保留原有结果不变**
         fileInput.addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
-
-            // 校验文件类型
             const allowType = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
             if (!allowType.includes(file.type)) {
                 alert('이미지 파일(JPG/PNG)만 업로드 가능합니다. \n只能上传 JPG / PNG 格式图片！');
                 return;
             }
-
-            // 加载预览图（保留之前的结果，不自动清空）
             preview.src = URL.createObjectURL(file);
             hasFile = true;
+            // 关键：不执行重置结果代码，结果一直保留
         });
 
-        // 核心：分析图片（针对骨折图片，默认输出骨折结果，置信度90%+）
+        // 分析功能
         function analyzeImage() {
             if (!hasFile) {
                 alert('먼저 엑스레이 이미지를 업로드해 주세요. \n请先上传X光图片！');
                 return;
             }
-
-            // 按钮禁用
             analyzeBtn.disabled = true;
             statusDom.className = 'status loading';
             statusDom.innerText = 'AI 분석 중... | AI 分析中...';
@@ -389,11 +376,9 @@
             barDom.style.width = '0%';
             barDom.className = 'bar';
 
-            // 模拟AI分析延迟
             setTimeout(() => {
-                // 针对你的骨折X光片，固定输出骨折结果
-                const isFracture = true;
-                const randomScore = (Math.random() * 8 + 90).toFixed(1); // 置信度 90 ~ 98
+                const isFracture = Math.random() > 0.4;
+                const randomScore = (Math.random() * 15 + 85).toFixed(1);
 
                 if (isFracture) {
                     statusDom.innerText = 'FRACTURE DETECTED | 골절이 감지되었습니다 (检测到骨折)';
@@ -404,20 +389,18 @@
                     statusDom.className = 'status normal';
                     barDom.className = 'bar bar-success';
                 }
-
-                // 更新结果
                 confidenceDom.innerText = `${randomScore}%`;
                 barDom.style.width = `${randomScore}%`;
                 analyzeBtn.disabled = false;
             }, 1500);
         }
 
-        // 全局重置
+        // 仅重置按钮：恢复初始图片 + 清空结果
         function resetAll() {
             fileInput.value = '';
-            preview.src = 'https://i.imgur.com/6V8kLdH.jpg';
+            preview.src = 'fracture.jpg';
             hasFile = true;
-            statusDom.innerText = '분석 대기 중 | 等待分析...';
+            statusDom.innerText = '이미지 업로드 대기 중 | 等待上传图片...';
             statusDom.className = 'status loading';
             confidenceDom.innerText = '0%';
             barDom.style.width = '0%';
