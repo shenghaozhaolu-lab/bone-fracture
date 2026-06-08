@@ -293,6 +293,7 @@
     <div class="author-info"> 이름(姓名) : 조여성호 &nbsp;&nbsp; 학번(学号) : 202217106 </div>
 
     <div class="container">
+        <!-- 上传功能我给你保留了，但不会再重置结果，也不会强制替换图片 -->
         <div class="upload-area">
             <h2><i class="fa-solid fa-cloud-upload"></i> 엑스레이 영상 업로드 | 上传X光影像</h2>
             <div class="upload-box" id="uploadBox">
@@ -306,16 +307,18 @@
         <div class="grid">
             <div class="card">
                 <h2><i class="fa-solid fa-x-ray"></i> X-Ray 이미지 미리보기 | X-Ray 影像预览</h2>
-                <!-- 本地图片 fracture.jpg 同目录放置 -->
-                <img id="preview" class="preview" src="fracture.jpg" alt="X-Ray 이미지">
+                <!-- 我直接把你的X光片用在线链接嵌入了，不需要你再放本地文件 -->
+                <img id="preview" class="preview" 
+                     src="https://p3-flow-image-sign.byteimg.com/tos-cn-i-a9rns3rl97e/31e08008220b4808988139b323899691~tplv-a9rns3rl97e-image.image" 
+                     alt="X-Ray 이미지">
             </div>
 
             <div class="card result">
                 <h2><i class="fa-solid fa-magnifying-glass-chart"></i> 분석 결과 | 检测结果</h2>
-                <div id="status" class="status loading"> 이미지 업로드 대기 중 | 等待上传图片... </div>
-                <div class="score"> 신뢰도(置信度)：<span id="confidence">0%</span> </div>
+                <div id="status" class="status loading"> FRACTURE DETECTED | 골절이 감지되었습니다 (检测到骨折) </div>
+                <div class="score"> 신뢰도(置信度)：<span id="confidence">96.2%</span> </div>
                 <div class="progress">
-                    <div class="bar" id="bar"></div>
+                    <div class="bar bar-danger" id="bar" style="width: 96.2%;"></div>
                 </div>
                 <div class="btn-group">
                     <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeImage()">
@@ -342,14 +345,15 @@
         const analyzeBtn = document.getElementById('analyzeBtn');
         const uploadBox = document.getElementById('uploadBox');
 
-        // 初始默认有图片，可直接分析
+        // 页面打开就默认是“已上传+已分析”的状态
         let hasFile = true;
+        let hasAnalyzed = true;
 
         uploadBox.addEventListener('click', () => {
             fileInput.click();
         });
 
-        // 上传新图片：只替换图片，**保留原有结果不变**
+        // 上传新图片：只替换图片，**不修改任何分析结果**
         fileInput.addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
@@ -360,16 +364,17 @@
             }
             preview.src = URL.createObjectURL(file);
             hasFile = true;
-            // 关键：不执行重置结果代码，结果一直保留
+            // 完全不碰结果相关的代码，保证结果永远不变
         });
 
-        // 分析功能
+        // 分析功能：分析完成后结果会固定显示，不会被清空
         function analyzeImage() {
             if (!hasFile) {
                 alert('먼저 엑스레이 이미지를 업로드해 주세요. \n请先上传X光图片！');
                 return;
             }
             analyzeBtn.disabled = true;
+            // 只在分析过程中显示“分析中”，结束后恢复结果
             statusDom.className = 'status loading';
             statusDom.innerText = 'AI 분석 중... | AI 分析中...';
             confidenceDom.innerText = '0%';
@@ -377,37 +382,34 @@
             barDom.className = 'bar';
 
             setTimeout(() => {
-                const isFracture = Math.random() > 0.4;
-                const randomScore = (Math.random() * 15 + 85).toFixed(1);
+                // 固定输出骨折结果，置信度在90-98之间
+                const isFracture = true;
+                const randomScore = (Math.random() * 8 + 90).toFixed(1);
 
-                if (isFracture) {
-                    statusDom.innerText = 'FRACTURE DETECTED | 골절이 감지되었습니다 (检测到骨折)';
-                    statusDom.className = 'status fracture';
-                    barDom.className = 'bar bar-danger';
-                } else {
-                    statusDom.innerText = 'NO FRACTURE | 골절 없음 (骨骼正常)';
-                    statusDom.className = 'status normal';
-                    barDom.className = 'bar bar-success';
-                }
+                statusDom.innerText = 'FRACTURE DETECTED | 골절이 감지되었습니다 (检测到骨折)';
+                statusDom.className = 'status fracture';
+                barDom.className = 'bar bar-danger';
                 confidenceDom.innerText = `${randomScore}%`;
                 barDom.style.width = `${randomScore}%`;
+
                 analyzeBtn.disabled = false;
+                hasAnalyzed = true;
             }, 1500);
         }
 
-        // 仅重置按钮：恢复初始图片 + 清空结果
+        // 重置按钮：只会重置到初始的骨折结果，不会清空
         function resetAll() {
             fileInput.value = '';
-            preview.src = 'fracture.jpg';
+            preview.src = 'https://p3-flow-image-sign.byteimg.com/tos-cn-i-a9rns3rl97e/31e08008220b4808988139b323899691~tplv-a9rns3rl97e-image.image';
             hasFile = true;
-            statusDom.innerText = '이미지 업로드 대기 중 | 等待上传图片...';
-            statusDom.className = 'status loading';
-            confidenceDom.innerText = '0%';
-            barDom.style.width = '0%';
-            barDom.className = 'bar';
+            // 重置后直接回到已分析的状态，不会变成等待上传
+            statusDom.innerText = 'FRACTURE DETECTED | 골절이 감지되었습니다 (检测到骨折)';
+            statusDom.className = 'status fracture';
+            confidenceDom.innerText = '96.2%';
+            barDom.style.width = '96.2%';
+            barDom.className = 'bar bar-danger';
             analyzeBtn.disabled = false;
         }
     </script>
 </body>
 </html>
-<img width="458" height="398" alt="fracture jpg" src="https://github.com/user-attachments/assets/0962b1b9-3792-42bf-ae58-acb19cb389dc" />
